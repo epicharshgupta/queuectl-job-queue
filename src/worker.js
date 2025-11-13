@@ -23,7 +23,7 @@ function exponentialBackoff(attempt) {
 
 async function processJob(job) {
   const JOB_TIMEOUT_MS = getJobTimeoutMs();
-  console.log(`[Worker ${workerId}] 🏁 Processing job: ${job.id} (${job.command})`);
+  console.log(`[Worker ${workerId}]  Processing job: ${job.id} (${job.command})`);
   lockJob(job.id, workerId);
 
   const startTime = Date.now();
@@ -65,28 +65,28 @@ async function processJob(job) {
       console.error(`[Worker ${workerId}] ⏱️ Job ${job.id} timed out after ${duration}s`);
       stderr += `\n⏱️ Job timed out after ${JOB_TIMEOUT_MS / 1000}s\n`;
     } else {
-      console.error(`[Worker ${workerId}] ❌ Job ${job.id} failed after ${duration}s`);
+      console.error(`[Worker ${workerId}]  Job ${job.id} failed after ${duration}s`);
     }
 
     if (attempts > job.max_retries) {
-      console.error(`[Worker ${workerId}] 💀 Moving job ${job.id} to DLQ`);
+      console.error(`[Worker ${workerId}]  Moving job ${job.id} to DLQ`);
       await updateJobState(job.id, "dead", stdout, stderr);
     } else {
       const delay = exponentialBackoff(attempts);
-      console.log(`[Worker ${workerId}] 🔁 Retrying in ${delay / 1000}s (attempt ${attempts})`);
+      console.log(`[Worker ${workerId}]  Retrying in ${delay / 1000}s (attempt ${attempts})`);
       setTimeout(async () => {
         job.attempts = attempts;
         await processJob(job);
       }, delay);
     }
   } else {
-    console.log(`[Worker ${workerId}] ✅ Job ${job.id} completed in ${duration}s`);
+    console.log(`[Worker ${workerId}]  Job ${job.id} completed in ${duration}s`);
     await updateJobState(job.id, "completed", stdout, stderr);
   }
 }
 
 async function startWorker() {
-  console.log(`[Worker ${workerId}] 👷 Worker started...`);
+  console.log(`[Worker ${workerId}]  Worker started...`);
   while (true) {
     const job = await getNextJob();
     if (job) {
